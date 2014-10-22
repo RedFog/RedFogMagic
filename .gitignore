@@ -4,3 +4,10 @@
 *.suo
 *.vcxproj
 *.filters
+*.exe
+*.ilk
+*.pdb
+*.obj
+*.log
+*.tlog
+*.idb

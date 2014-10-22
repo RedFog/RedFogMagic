@@ -2,13 +2,13 @@
 
 template<typename T, size_t MAX, size_t... MAXs>
 class XMatrix{
-public:
 	typedef XMatrix Self;
 	typedef Self& SR;
 	typedef Self const& SCR;
 	typedef XMatrix<T, MAXs...> Sub;
 
 	std::array<Sub, MAX> data;
+public:
 	static size_t const CAPACITY = MAX * Sub::CAPACITY;
 	static bool const SIMPLE = false;
 
@@ -26,13 +26,14 @@ public:
 	SR replace(std::initializer_list<T> const& list){
 		return replace(list.begin(), list.end());
 	};
-	SR replace(std::initializer_list<Sub> const& list){
+	template<typename List>SR replace(std::initializer_list<List> const& list){
 		auto xbegin = list.begin();
 		auto xend = list.end();
 		for (auto& item : data){
 			if (xbegin == xend) break;
-			data[i] = *xbegin++;
+			item.replace(*xbegin++);
 		};
+		return *this;
 	};
 	template<typename Iter>SR replace(Iter xbegin, Iter xend){
 		static size_t const capa = Sub::CAPACITY;
@@ -68,12 +69,13 @@ public:
 		return data[i]
 	};
 
-	SR replace(std::initializer_list<T> const& list){ return replace(list.begin(), list.end()) };
+	SR replace(std::initializer_list<T> const& list){ return replace(list.begin(), list.end()); };
 	template<typename Iter>SR replace(Iter xbegin, Iter xend){
 		for (auto& item : data){
 			if (xbegin == xend) break;
-			data[i] = *xbegin++;
+			item = *xbegin++;
 		};
+		return *this;
 	};
 
 };
@@ -103,6 +105,16 @@ class Matrix{
 		};
 	} wcount;
 
+	static bool const SIMPLE = false;
+
+	template<size_t M, size_t... X>struct InitListHelper{
+		typedef typename InitListHelper<X...>::Result Sub;
+		typedef std::initializer_list<Sub> Result;
+	};
+	template<size_t M>struct InitListHelper<M>{
+		typedef std::initializer_list<T> Result;
+	};
+
 	Data& self(){ return *data; };
 	Data const& self()const{ return *data; };
 public:
@@ -118,9 +130,10 @@ public:
 	Matrix(std::initializer_list<T> const& list) :Matrix(){
 		data->replace(list);
 	};
-	Matrix(std::initializer_list<Data::Sub> const& list) :Matrix(){
+	Matrix(typename InitListHelper<MAX, OTHER...>::Result const& list) :Matrix(){
 		data->replace(list);
 	};
+	
 
 };
 
@@ -149,6 +162,8 @@ class Matrix<T, MAX>{
 		};
 	} wcount;
 
+	static bool const SIMPLE = true;
+
 	Data& self(){ return *data; };
 	Data const& self()const{ return *data; };
 public:
@@ -164,15 +179,12 @@ public:
 	Matrix(std::initializer_list<T> const& list){
 		self().replace(list.begin(), list.end());
 	};
-	Matrix(std::initializer_list<T> const& list){
-		self().replace(list.begin(), list.end());
-	};
 
 };
 
 template<typename Contain, bool SIMPLE>
 class XMBPtr{
-	typedef Contain::Sub Sub;
+	typedef typename Contain::Sub Sub;
 
 };
 
